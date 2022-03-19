@@ -117,10 +117,22 @@ public class HTTPServer implements Runnable {
                         data_out.write(fileData, 0, file_length);
                         data_out.flush();
 
+                        if (ServerConstants.verbose) {
+                            System.out.println("File " + file_requested + " of type " + content + " returned");
+                        }
+
                 }
+
+
             }
 
 
+        } catch (FileNotFoundException fnfe) {
+            try {
+                fileNotFound(out, data_out, file_requested);
+            } catch (IOException ioe) {
+                System.err.println("Error with file not found exception : " + ioe.getMessage());
+            }
         } catch (IOException ioe) {
             System.err.println("Server error : " + ioe);
         } finally {
@@ -162,5 +174,23 @@ public class HTTPServer implements Runnable {
             return "text/html";
         else
             return "text/plain";
+    }
+
+    private void fileNotFound(PrintWriter out, OutputStream dataOut, String file_requested) throws IOException {
+        File file = new File(ServerConstants.WEB_ROOT, ServerConstants.FILE_NOT_FOUND);
+        int file_length = (int) file.length();
+        String content = "text/html";
+        byte[] fileData = readFileData(file, file_length);
+
+        out.println(Utils.HeaderBuilder.HTTP_200(file_length, content));
+
+        out.flush(); // flush character output stream buffer
+
+        dataOut.write(fileData, 0, file_length);
+        dataOut.flush();
+
+        if (ServerConstants.verbose) {
+            System.out.println("File " + file_requested + " not found");
+        }
     }
 }
