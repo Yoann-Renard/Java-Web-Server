@@ -65,6 +65,102 @@ public class HTTPServer implements Runnable {
 
     @Override
     public void run(){
+        BufferedReader in = null;
+        PrintWriter out = null;
+        BufferedOutputStream data_out = null;
+        String file_requested = null;
 
+        try{
+            in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
+            out = new PrintWriter(connect.getOutputStream());
+            data_out = new BufferedOutputStream(connect.getOutputStream());
+
+            String input = in.readLine();
+            StringTokenizer parse = new StringTokenizer(input);
+            String method = parse.nextToken().toUpperCase();
+            file_requested = parse.nextToken().toLowerCase();
+
+            if(!ServerConstants.SUPPORTED_METHODS.contains(method)){
+                if (ServerConstants.verbose) {
+                    System.out.println("501 Not Implemented : " + method + " method.");
+                }
+                File file = new File(ServerConstants.WEB_ROOT, ServerConstants.METHOD_NOT_SUPPORTED);
+                int file_length = (int) file.length();
+                String content_type = "text/html";
+                byte[] file_data = readFileData(file, file_length);
+
+                out.println(
+                        Utils.HeaderBuilder.HTTP_503(file_length, content_type)
+                );
+                out.flush();
+
+                data_out.write(file_data, 0, file_length);
+                data_out.flush();
+            }else {
+
+
+                switch (method){
+                    case "GET":
+                        if (file_requested.endsWith("/")) {
+                            file_requested += ServerConstants.DEFAULT_FILE;
+                        }
+
+                        File file = new File(ServerConstants.WEB_ROOT, file_requested);
+                        int file_length = (int) file.length();
+                        String content = getContentType(file_requested);
+
+                        byte[] fileData = readFileData(file, file_length);
+
+                        out.println(Utils.HeaderBuilder.HTTP_200(file_length, content));
+                        out.flush();
+
+                        data_out.write(fileData, 0, file_length);
+                        data_out.flush();
+
+                }
+            }
+
+
+        } catch (IOException ioe) {
+            System.err.println("Server error : " + ioe);
+        } finally {
+            try {
+                assert in != null;
+                in.close();
+                assert out != null;
+                out.close();
+                assert data_out != null;
+                data_out.close();
+                connect.close();
+            } catch (Exception e) {
+                System.err.println("Error closing stream : " + e.getMessage());
+            }
+
+            if (ServerConstants.verbose) {
+                System.out.println("Connection closed.\n");
+            }
+        }
+    }
+
+    private byte[] readFileData(File file, int fileLength) throws IOException {
+        FileInputStream fileIn = null;
+        byte[] fileData = new byte[fileLength];
+
+        try {
+            fileIn = new FileInputStream(file);
+            fileIn.read(fileData);
+        } finally {
+            if (fileIn != null)
+                fileIn.close();
+        }
+
+        return fileData;
+    }
+
+    private String getContentType(String fileRequested) {
+        if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
+            return "text/html";
+        else
+            return "text/plain";
     }
 }

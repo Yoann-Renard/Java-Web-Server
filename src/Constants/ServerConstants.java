@@ -1,6 +1,9 @@
 package Constants;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class ServerConstants {
     public static int PORT = 8080;
@@ -12,4 +15,7 @@ public class ServerConstants {
 
     // DEFAULT OPTIONS
     public static boolean verbose = false;
+
+    public static List<String> SUPPORTED_METHODS = Arrays.asList("GET", "HEAD");
+
 }
