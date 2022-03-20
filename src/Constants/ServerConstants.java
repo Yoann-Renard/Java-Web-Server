@@ -1,21 +1,40 @@
 package Constants;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class ServerConstants {
-    public static int PORT = 8080;
 
-    public static final File WEB_ROOT = new File("src/WebRoot/");
-    public static final String DEFAULT_FILE = "index.html";
-    public static final String FILE_NOT_FOUND = "404.html";
-    public static final String METHOD_NOT_SUPPORTED = "not_supported.html";
+    public int PORT;
+
+    public final File WEB_ROOT;
+    public final String DEFAULT_FILE;
+    public final String FILE_NOT_FOUND;
+    public final String METHOD_NOT_SUPPORTED;
 
     // DEFAULT OPTIONS
-    public static boolean verbose = false;
+    public boolean verbose = false;
 
-    public static List<String> SUPPORTED_METHODS = Arrays.asList("GET", "HEAD");
+    public List<String> SUPPORTED_METHODS;
 
+    public final HashMap<String,String> ENDPOINTS;
+
+    public ServerConstants(){
+        PORT = 8080;
+
+        // FILES
+        WEB_ROOT = new File("src/WebRoot/");
+        DEFAULT_FILE = "index.html";
+        FILE_NOT_FOUND = "404.html";
+        METHOD_NOT_SUPPORTED = "not_supported.html";
+
+        // OPTIONS
+        verbose = false;
+
+        SUPPORTED_METHODS = Arrays.asList("GET", "HEAD");
+
+
+        ENDPOINTS = new HashMap<>();
+        ENDPOINTS.put("/", DEFAULT_FILE);
+    }
 }

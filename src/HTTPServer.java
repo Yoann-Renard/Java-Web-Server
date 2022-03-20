@@ -12,12 +12,15 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 public class HTTPServer implements Runnable {
 
     // Client Connection via Socket Class
     private Socket connect;
+
+    private static final ServerConstants server_const = new ServerConstants();
 
     public HTTPServer(Socket c) {
         connect = c;
@@ -29,7 +32,7 @@ public class HTTPServer implements Runnable {
                 case "-p":
                 case "--port":
                     try {
-                        ServerConstants.PORT = Integer.parseInt(args[i + 1]);
+                        server_const.PORT = Integer.parseInt(args[i + 1]);
                     } catch (NumberFormatException e){
                         System.out.println("--port option value must be an integer: " + e.getMessage());
                         System.exit(1);
@@ -38,19 +41,19 @@ public class HTTPServer implements Runnable {
                     break;
                 case "-v":
                 case "--verbose":
-                    ServerConstants.verbose = true;
+                    server_const.verbose = true;
                 default:
                     break;
             }
         }
 
         try{
-            ServerSocket server_connect = new ServerSocket(ServerConstants.PORT);
-            System.out.println("Server started.\nListening for connections on port : " + ServerConstants.PORT + " ...\n");
+            ServerSocket server_connect = new ServerSocket(server_const.PORT);
+            System.out.println("Server started.\nListening for connections on port : " + server_const.PORT + " ...\n");
 
             while(true){
                 HTTPServer server = new HTTPServer(server_connect.accept());
-                if (ServerConstants.verbose) {
+                if (server_const.verbose) {
                     System.out.println("Connection opened. (" + new Date() + ")");
                 }
 
@@ -80,11 +83,11 @@ public class HTTPServer implements Runnable {
             String method = parse.nextToken().toUpperCase();
             file_requested = parse.nextToken().toLowerCase();
 
-            if(!ServerConstants.SUPPORTED_METHODS.contains(method)){
-                if (ServerConstants.verbose) {
+            if(!server_const.SUPPORTED_METHODS.contains(method)){
+                if (server_const.verbose) {
                     System.out.println("501 Not Implemented : " + method + " method.");
                 }
-                File file = new File(ServerConstants.WEB_ROOT, ServerConstants.METHOD_NOT_SUPPORTED);
+                File file = new File(server_const.WEB_ROOT, server_const.METHOD_NOT_SUPPORTED);
                 int file_length = (int) file.length();
                 String content_type = "text/html";
                 byte[] file_data = readFileData(file, file_length);
@@ -102,11 +105,19 @@ public class HTTPServer implements Runnable {
                 switch (method){
                     case "GET":
                         System.out.println(file_requested);
-                        if (file_requested.endsWith("/")) {
-                            file_requested += ServerConstants.DEFAULT_FILE;
+
+                        for(Map.Entry<String, String> entry : server_const.ENDPOINTS.entrySet()) {
+                            String key = entry.getKey();
+                            String value = entry.getValue();
+
+                            if (file_requested.equals(key)){
+                                file_requested = value;
+                                break;
+                            }
                         }
 
-                        File file = new File(ServerConstants.WEB_ROOT, file_requested);
+
+                        File file = new File(server_const.WEB_ROOT, file_requested);
                         int file_length = (int) file.length();
                         String content = getContentType(file_requested);
 
@@ -118,7 +129,7 @@ public class HTTPServer implements Runnable {
                         data_out.write(fileData, 0, file_length);
                         data_out.flush();
 
-                        if (ServerConstants.verbose) {
+                        if (server_const.verbose) {
                             System.out.println("File " + file_requested + " of type " + content + " returned");
                         }
 
@@ -149,7 +160,7 @@ public class HTTPServer implements Runnable {
                 System.err.println("Error closing stream : " + e.getMessage());
             }
 
-            if (ServerConstants.verbose) {
+            if (server_const.verbose) {
                 System.out.println("Connection closed.\n");
             }
         }
@@ -178,7 +189,7 @@ public class HTTPServer implements Runnable {
     }
 
     private void fileNotFound(PrintWriter out, OutputStream dataOut, String file_requested) throws IOException {
-        File file = new File(ServerConstants.WEB_ROOT, ServerConstants.FILE_NOT_FOUND);
+        File file = new File(server_const.WEB_ROOT, server_const.FILE_NOT_FOUND);
         int file_length = (int) file.length();
         String content = "text/html";
         byte[] fileData = readFileData(file, file_length);
@@ -190,7 +201,7 @@ public class HTTPServer implements Runnable {
         dataOut.write(fileData, 0, file_length);
         dataOut.flush();
 
-        if (ServerConstants.verbose) {
+        if (server_const.verbose) {
             System.out.println("File " + file_requested + " not found");
         }
     }
