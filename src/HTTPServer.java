@@ -101,6 +101,7 @@ public class HTTPServer implements Runnable {
 
                 switch (method){
                     case "GET":
+                        System.out.println(file_requested);
                         if (file_requested.endsWith("/")) {
                             file_requested += ServerConstants.DEFAULT_FILE;
                         }
