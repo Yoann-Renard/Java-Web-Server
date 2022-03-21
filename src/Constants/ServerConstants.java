@@ -7,13 +7,11 @@ public class ServerConstants {
 
     public int PORT;
 
-    public final File WEB_ROOT;
+    public static final File WEB_ROOT = new File("src/WebRoot/");;
     public final String DEFAULT_FILE;
     public final String FILE_NOT_FOUND;
     public final String METHOD_NOT_SUPPORTED;
 
-    // DEFAULT OPTIONS
-    public boolean verbose = false;
 
     public List<String> SUPPORTED_METHODS;
 
@@ -23,13 +21,11 @@ public class ServerConstants {
         PORT = 8080;
 
         // FILES
-        WEB_ROOT = new File("src/WebRoot/");
+
         DEFAULT_FILE = "index.html";
         FILE_NOT_FOUND = "404.html";
         METHOD_NOT_SUPPORTED = "not_supported.html";
 
-        // OPTIONS
-        verbose = false;
 
         SUPPORTED_METHODS = Arrays.asList("GET", "HEAD");
 
