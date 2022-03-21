@@ -13,10 +13,26 @@
             left: 50%;
             transform: translateX(-20vw);
         }
+        span{
+            color: whitesmoke;
+            font-size: 20px;
+            position: absolute;
+            text-align: center;
+            width: 50vw;
+            left: 50%;
+            top: 60%;
+            transform: translateX(-25vw);
+        }
     </style>
 </head>
 
 <body>
 <img src="https://cdn.dribbble.com/users/2009763/screenshots/4210100/literary_compas_animation_animagic_cel2.gif" alt="fox_run.gif">
+<span></span>
+<script>
+    let text = document.getElementsByTagName('span')[0];
+    text.innerHTML = `Web server is successfully installed and working.<br>
+    Running on ${window.location.host} ...`
+</script>
 </body>
 </html>
