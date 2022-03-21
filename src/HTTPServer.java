@@ -84,23 +84,8 @@ public class HTTPServer implements Runnable {
             String method = parse.nextToken().toUpperCase();
 
             if(!server_const.SUPPORTED_METHODS.contains(method)){
-                if (server_const.verbose) {
-                    System.out.println("501 Not Implemented : " + method + " method.");
-                }
-                File file = new File(server_const.WEB_ROOT, server_const.METHOD_NOT_SUPPORTED);
-                int file_length = (int) file.length();
-                String content_type = "text/html";
-                byte[] file_data = readFileData(file, file_length);
-
-                out.println(
-                        Utils.HeaderBuilder.HTTP_503(file_length, content_type)
-                );
-                out.flush();
-
-                data_out.write(file_data, 0, file_length);
-                data_out.flush();
-            }else {
-
+                this.notImplemented(out, data_out, method);
+            } else {
                 request = parse.nextToken().toLowerCase();
                 try {
                     file_requested = request.split("\\?")[0];
@@ -135,37 +120,12 @@ public class HTTPServer implements Runnable {
 
                 switch (method){
                     case "GET":
-
-                        for(Map.Entry<String, String> entry : server_const.ENDPOINTS.entrySet()) {
-                            String key = entry.getKey();
-                            String value = entry.getValue();
-
-                            if (file_requested.equals(key)){
-                                file_requested = value;
-                                break;
-                            }
-                        }
-
-
-                        File file = new File(server_const.WEB_ROOT, file_requested);
-                        int file_length = (int) file.length();
-                        String content = getContentType(file_requested);
-
-                        byte[] fileData = readFileData(file, file_length);
-
-                        out.println(Utils.HeaderBuilder.HTTP_200(file_length, content));
-                        out.flush();
-
-                        data_out.write(fileData, 0, file_length);
-                        data_out.flush();
-
-                        if (server_const.verbose) {
-                            System.out.println("File " + file_requested + " of type " + content + " returned");
-                        }
-
+                        this.get(out, data_out, file_requested);
+                        break;
+                    default:
+                        System.out.println("Method "+method+" implemented but not handled.");
+                        break;
                 }
-
-
             }
 
 
@@ -233,6 +193,53 @@ public class HTTPServer implements Runnable {
 
         if (server_const.verbose) {
             System.out.println("File " + file_requested + " not found");
+        }
+    }
+
+    private void notImplemented(PrintWriter out, OutputStream data_out, String method) throws IOException {
+        File file = new File(server_const.WEB_ROOT, server_const.METHOD_NOT_SUPPORTED);
+        int file_length = (int) file.length();
+        String content_type = "text/html";
+        byte[] file_data = readFileData(file, file_length);
+
+        out.println(
+                Utils.HeaderBuilder.HTTP_503(file_length, content_type)
+        );
+        out.flush();
+
+        data_out.write(file_data, 0, file_length);
+        data_out.flush();
+        if (server_const.verbose) {
+            System.out.println("501 Not Implemented : " + method + " method.");
+        }
+    }
+
+    private void get(PrintWriter out, OutputStream data_out, String file_requested) throws IOException {
+        for(Map.Entry<String, String> entry : server_const.ENDPOINTS.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            if (file_requested.equals(key)){
+                file_requested = value;
+                break;
+            }
+        }
+
+
+        File file = new File(server_const.WEB_ROOT, file_requested);
+        int file_length = (int) file.length();
+        String content = getContentType(file_requested);
+
+        byte[] fileData = readFileData(file, file_length);
+
+        out.println(Utils.HeaderBuilder.HTTP_200(file_length, content));
+        out.flush();
+
+        data_out.write(fileData, 0, file_length);
+        data_out.flush();
+
+        if (server_const.verbose) {
+            System.out.println("File " + file_requested + " of type " + content + " returned");
         }
     }
 }
