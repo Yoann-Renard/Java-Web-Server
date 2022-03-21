@@ -14,9 +14,11 @@ public class Response {
     private final byte[] fileData;
 
     public Response(String file_requested, PrintWriter out, OutputStream data_out) throws IOException {
+        // TODO handle images/gifs
+        content = getContentType(file_requested);
         File file = new File(WEB_ROOT, file_requested);
         file_length = (int) file.length();
-        content = getContentType(file_requested);
+        //System.out.println("FILE LENGTH: "+file_length);
         fileData = readFileData(file, file_length);
         response_out = out;
         response_data_out = data_out;
@@ -92,6 +94,10 @@ public class Response {
     private String getContentType(String fileRequested) {
         if (fileRequested.endsWith(".htm")  ||  fileRequested.endsWith(".html"))
             return "text/html";
+        else if (fileRequested.endsWith(".jpg"))
+            return "image/jpeg";
+        else if (fileRequested.endsWith(".gif"))
+            return "image/gif";
         else
             return "text/plain";
     }
@@ -108,5 +114,9 @@ public class Response {
                 fileIn.close();
         }
         return fileData;
+    }
+
+    public String getContent(){
+        return content;
     }
 }

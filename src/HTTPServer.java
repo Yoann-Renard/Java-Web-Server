@@ -177,24 +177,28 @@ public class HTTPServer implements Runnable {
     }
 
     private void get(PrintWriter out, OutputStream data_out, String file_requested) throws IOException {
+        String file_to_send = null;
         for(Map.Entry<String, String> entry : server_const.ENDPOINTS.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
 
             if (file_requested.equals(key)){
-                file_requested = value;
+                file_to_send = value;
                 break;
             }
         }
+        if (file_to_send == null){
+            throw new FileNotFoundException();
+        }
 
-        Response response = new Response(file_requested,out,data_out);
+        Response response = new Response(file_to_send,out,data_out);
 
         response.setHeader(200);
         response.setBody();
         response.send();
 
         if (verbose) {
-            System.out.println("File " + file_requested + " returned");
+            System.out.println("File " + file_to_send + " of type "+response.getContent()+ " returned");
         }
     }
 }
