@@ -11,9 +11,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Date;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class HTTPServer implements Runnable {
 
@@ -71,7 +69,10 @@ public class HTTPServer implements Runnable {
         BufferedReader in = null;
         PrintWriter out = null;
         BufferedOutputStream data_out = null;
+        String request = null;
         String file_requested = null;
+        String query = null;
+        HashMap<String, String> params = new HashMap<>();
 
         try{
             in = new BufferedReader(new InputStreamReader(connect.getInputStream()));
@@ -81,7 +82,6 @@ public class HTTPServer implements Runnable {
             String input = in.readLine();
             StringTokenizer parse = new StringTokenizer(input);
             String method = parse.nextToken().toUpperCase();
-            file_requested = parse.nextToken().toLowerCase();
 
             if(!server_const.SUPPORTED_METHODS.contains(method)){
                 if (server_const.verbose) {
@@ -101,10 +101,40 @@ public class HTTPServer implements Runnable {
                 data_out.flush();
             }else {
 
+                request = parse.nextToken().toLowerCase();
+                try {
+                    file_requested = request.split("\\?")[0];
+                    query = request.split("\\?")[1];
+                    if (server_const.verbose){
+                        System.out.println("FILE REQUESTED : "+file_requested);
+                        System.out.println("QUERY : "+query);
+                    }
+                }catch (ArrayIndexOutOfBoundsException e){
+                    file_requested = request.replace("?", "");
+                    if (server_const.verbose){
+                        System.out.println("FILE REQUESTED : "+file_requested);
+                        System.out.println("NO QUERY");
+                    }
+                }
+                if (query != null){
+                    String[] raw_params = query.split("&");
+                    for(String p : raw_params){
+                        try{
+                            String key = p.split("=")[0];
+                            String value = p.split("=")[1];
+                            params.put(key,value);
+                        }catch (ArrayIndexOutOfBoundsException e){
+                            // TODO Return "400 Bad Request"
+                        }
+                    }
+                    if (server_const.verbose){
+                        System.out.println("PARAMETERS : "+params);
+                    }
+                }
+
 
                 switch (method){
                     case "GET":
-                        System.out.println(file_requested);
 
                         for(Map.Entry<String, String> entry : server_const.ENDPOINTS.entrySet()) {
                             String key = entry.getKey();
@@ -194,7 +224,7 @@ public class HTTPServer implements Runnable {
         String content = "text/html";
         byte[] fileData = readFileData(file, file_length);
 
-        out.println(Utils.HeaderBuilder.HTTP_200(file_length, content));
+        out.println(Utils.HeaderBuilder.HTTP_404(file_length, content));
 
         out.flush(); // flush character output stream buffer
 
