@@ -40,8 +40,9 @@ public class HTTPServer implements Runnable {
                 case "-v":
                 case "--verbose":
                     server_const.verbose = true;
-                default:
                     break;
+                default:
+                    break; // TODO Throw Error: Unrecognized Option
             }
         }
 
