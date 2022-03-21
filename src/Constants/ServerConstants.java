@@ -33,5 +33,6 @@ public class ServerConstants {
         ENDPOINTS = new HashMap<>();
         ENDPOINTS.put("/", DEFAULT_FILE);
         ENDPOINTS.put("/res/404.jpg", "res/http_cats/404.jpg");
+        ENDPOINTS.put("/res/running_fox.gif", "res/index/running_fox.gif");
     }
 }
